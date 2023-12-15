@@ -1,0 +1,151 @@
+---
+title: "Sampling Code"
+author: "Kaleb Williams"
+date: "2023-12-12"
+output: html_document
+---
+```{r}
+#Importing data for average suicide rates in the USA
+
+data1 <- read.csv('Death.csv')
+
+#Cleaning data 
+
+rate_data <- data1$ESTIMATE
+
+rate_fix <- na.omit(rate_data)
+
+suicide_rate_data <- rate_fix[1:5472]
+```
+
+```{r}
+#Plotting histogram of the data 
+
+hist(suicide_rate_data)
+
+#We can see that the data is apporximately Poisson distributed.
+```
+
+
+```{r}
+
+#Calculating needed parameters
+
+lambda_hat <- mean(suicide_rate_data)
+
+n <- length(suicide_rate_data)
+
+data_sum <- sum(suicide_rate_data)
+```
+
+```{r}
+#Could not get the algorithm to run properly, therefore could not sample and ran out of time.
+
+#Metropolis-Hastings algorithm for standard posterior distribution of Poisson distribution using conjugate Gamma prior
+
+set.seed(1)
+target.density = function(x){
+	return(ifelse(x>0,0,(x^75122)*exp(1)^(-5477*x)))
+}
+
+N <- 10100 # Total number of iteration
+B <- 100 # Burn-in Numbers
+x <- rep(0,N)
+a <- 0
+x[1] = 14 #this is a starting value or initial value
+for(i in 2:N){
+	proposal = rnorm(1, mean = x[i-1],sd = 1)
+	A = (target.density(proposal) * dnorm(x[i-1], proposal, 1))/(target.density(x[i-1]) * dnorm(proposal, x[i-1], 1))
+	if(runif(1) < A){
+            a <- a + 1
+		x[i] = proposal # accept move with probabily min(1,A)
+	} else {
+		x[i] = x[i-1] # otherwise "reject", and stay where you are
+	}
+}
+
+Acc.Ratio <- (a/N)*100
+Acc.Ratio
+
+# Before burn-in
+
+plot(1:N, x, xlab = "Iteration number", ylab = "Sampled values")
+
+# After burn-in
+
+plot((B+1):N, x[(B+1):N], xlab = "Iteration number", ylab = "Sampled values")
+
+x <- x[(B+1):N]
+
+#Conjugate prior sample relabelling
+
+conj_sample = x
+
+#Calculating sample mean for standard posterior using conjugate Gamma prior
+
+conj_mean = mean(conj_sample)
+
+#Calculating standard deviation for standard posterior conjugate prior
+
+conj_sd = sd(conj_sample)
+```
+
+```{r}
+#Could not get the algorithm to run properly, therefore could not sample and ran out of time.
+
+#Metropolis-Hastings algorithm for standard posterior distribution of Poisson distribution using non-conjugate beta prior
+
+set.seed(1)
+target.density = function(x){
+	return(ifelse(x>0,0,(x^75122)*exp(1)^(-5477*x)))
+}
+
+N <- 10100 # Total number of iteration
+B <- 100 # Burn-in Numbers
+x <- rep(0,N)
+a <- 0
+x[1] = 14 #this is a starting value or initial value
+for(i in 2:N){
+	proposal = rnorm(1, mean = x[i-1],sd = 1)
+	A = (target.density(proposal) * dnorm(x[i-1], proposal, 1))/(target.density(x[i-1]) * dnorm(proposal, x[i-1], 1))
+	if(runif(1) < A){
+            a <- a + 1
+		x[i] = proposal # accept move with probabily min(1,A)
+	} else {
+		x[i] = x[i-1] # otherwise "reject", and stay where you are
+	}
+}
+
+Acc.Ratio <- (a/N)*100
+Acc.Ratio
+
+# Before burn-in
+
+plot(1:N, x, xlab = "Iteration number", ylab = "Sampled values")
+
+# After burn-in
+
+plot((B+1):N, x[(B+1):N], xlab = "Iteration number", ylab = "Sampled values")
+
+x <- x[(B+1):N]
+
+#Non conjugate sample relabelling
+
+non_conj_sample = x
+
+#Calculating sample mean for conjugate prior
+
+non_conj_mean = mean(non_conj_sample)
+
+#Calculating standard deviation for conjugate prior
+
+non_conj_sd = sd(non_conj_sample)
+```
+
+```{r}
+#Plotting histograms of the samples
+
+hist(conj_sample)
+
+hist(non_conj_sample)
+```
